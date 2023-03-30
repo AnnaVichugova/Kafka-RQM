@@ -1,0 +1,74 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#установка библиотеки 
+!pip install pika
+
+#импорт модулей 
+import pika
+import json
+import random
+from datetime import datetime
+import time
+
+####################################ячейка в Google Colab №2 - публикация сообщений###########################################
+# Подключение к серверу RabbitMQ server в облачной платформе cloudamqp.com 
+connection = pika.BlockingConnection(pika.URLParameters('.........здесь взять адрес подключения к своему инстансу в https://customer.cloudamqp.com/instance'))
+channel = connection.channel()
+
+# объявление обменника, заранее созданного в cloudamqp.com
+channel.exchange_declare(exchange='InputsFanoutExchange', exchange_type='fanout')
+
+#списки полей в заявке
+names = ['Anna', 'Lisa', 'OOO Rim', 'ZAO Kisa', 'Ivan', 'Petr', 'Lisa', 'OOO Kira', 'Kira', 'OAO Tips']
+products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
+questions = ['payment', 'delivery', 'discount', 'vip', 'staff']
+
+while True:
+    #подготовка данных для публикации в JSON-формате
+    now=datetime.now()
+    id=now.strftime("%m/%d/%Y %H:%M:%S")
+
+    content = ''
+    theme = ''
+    corp = 0
+
+    #подготовка списка возможных ключей маршрутизации (routing keys)
+    name = random.choice(names)
+    corp = random.choice([1,0])
+
+    if corp==1 :
+      routing_keys = ['app' + '.company.' + name, 'question']
+    else:
+      routing_keys = ['app', 'question']
+
+    #случайный выбор одного из ключей маршрутизации (из routing keys)
+    subject=random.choice(routing_keys)
+
+    #добавление дополнительных данных для заголовка и тела сообщения в зависимости от темы заявки
+    if subject=='question':
+      theme = random.choice(questions)
+      content = 'Hello, I have a question about ' + theme
+    else :
+      theme ='app'
+      content = random.choice(products) + ' ' + str(random.randint(0,100))
+
+    #формирование полезной нагрузки (тело заявки) в JSON-формате
+    data = {'id': id, 'name': name, 'subject': subject, 'content': content}
+    message = json.dumps(data)
+
+    #отправка сообщения в обменник RabbitMQ с ключом маршрутизации и свойствами (заголовок)
+    channel.basic_publish(exchange='InputsFanoutExchange', routing_key=subject, body=message, properties=pika.BasicProperties(headers = {'subject': subject, 'theme':theme}))
+
+    #вывод отладочной информации     
+    print(f' [x] routing_key {subject}')
+    headers = {'subject': subject, 'theme':theme}
+    print(f' [x] Header {headers}')
+    print(f' [x] Sent {message}')
+
+    #повтор через 3 секунды
+    time.sleep(3)
+
+
+####################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#закрываем канал и соединение
+channel.close()
+connection.close()
