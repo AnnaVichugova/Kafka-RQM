@@ -1,0 +1,30 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#установка библиотеки 
+!pip install redis
+
+#импорт модулей 
+import json
+import random
+import redis
+
+####################################ячейка в Google Colab №2 - запись данных###########################################
+#подключение к redis
+r = redis.Redis(
+  host= '.........здесь название инстанса.upstash.io',
+  port= '34670',
+  password= 'здесь пароль пользователя Redis в upstash'
+)
+
+#создаем список продуктов и поставщиков
+products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
+providers = ['OOO Novo-Ivanovo', 'IP Marina A.A.', 'ZAO JivoDivo', 'IP Salunov S.E.', 'OOO Kizanuz', 'sklad_4', 'sklad_7', 'sklad_1']
+
+#бесконечный цикл случайного выбора продукта, количества и поставщиков и записи этих данных в Redis
+while True:
+  #случайный выбор
+  product = random.choice(products)
+  provider = random.choice(providers)
+  quantity = random.randint(0, 100)
+
+  #запись списка значений по ключу
+  r.rpush(product, provider +" "+ str(quantity))
