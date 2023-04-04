@@ -1,0 +1,26 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#импорт модулей 
+from google.colab import auth
+auth.authenticate_user()
+
+import gspread
+from google.auth import default
+creds, _ = default()
+
+####################################ячейка в Google Colab №2 - запись в Гугл-таблицы###########################################
+
+#Google Sheets Autentificate
+gc = gspread.authorize(creds)
+
+#Открытие заранее созданного файла Гугл-таблицы по идентификатору (взять из его URL, например, у меня это https://docs.google.com/spreadsheets/d/1BxVxI9kMHCgtRg1FLz7lsdazAjWCUbfTzSS4lApMiVY/edit)
+sh = gc.open_by_key('1BxVxI9kMHCgtRg1FLz7lsdazAjWCUbfTzSS4lApMiVY')
+wks = sh.sheet1
+
+#объявляем цикл от 1 до 11
+for x in range(1, 11):
+#переход на следующую строку в Гугл-таблице
+ x = x + 1
+
+ #обновление данных в в Гугл-таблице
+ #последовательно заполняем ячейки 1-ого столбца числами от 2 до 11 
+ wks.update_cell(x,1,str(x))
