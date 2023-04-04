@@ -1,0 +1,75 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#установка библиотек
+!pip install kafka-python 
+
+#импорт модулей 
+import json
+import random
+import time
+from time import sleep
+from kafka import KafkaProducer
+
+####################################ячейка в Google Colab №2 - публикация сообщений в Kafka###########################################
+# объявление продюсера Kafka
+producer = KafkaProducer(
+  bootstrap_servers=['........здесь взять название своего сервера.upstash.io:9092'],
+  sasl_mechanism='SCRAM-SHA-256',
+  security_protocol='SASL_SSL',
+  sasl_plain_username='.........здесь имя пользователя, взятое из upstash',
+  sasl_plain_password='..........здесь пароль для этого пользователя',
+  value_serializer=lambda v: json.dumps(v).encode('utf-8')
+)
+
+#бесконечный цикл публикации данных
+#списки полей в заявке
+names = ['Anna', 'Lisa', 'OOO Rim', 'ZAO Kisa', 'Ivan', 'Petr', 'Lisa', 'OOO Kira', 'Kira', 'OAO Tips']
+products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
+questions = ['payment', 'delivery', 'discount', 'vip', 'staff']
+
+while True:
+  #подготовка данных для публикации в JSON-формате
+  now=datetime.now()
+  id=now.strftime("%m/%d/%Y %H:%M:%S")
+
+  content = ''
+  theme = ''
+  corp = 0
+
+  #подготовка списка возможных ключей маршрутизации (routing keys)
+  name = random.choice(names)
+  corp = random.choice([1,0])
+
+  if corp==1 :
+    routing_keys = ['app' + '.company.' + name, 'question']
+   else:
+    routing_keys = ['app', 'question']
+
+  #случайный выбор одного из ключей маршрутизации (из routing keys)
+  subject=random.choice(routing_keys)
+
+  #добавление дополнительных данных для заголовка и тела сообщения в зависимости от темы заявки
+  if subject=='question':
+    theme = random.choice(questions)
+    content = 'Hello, I have a question about ' + theme
+  else :
+    theme ='app'
+    content = random.choice(products) + ' ' + str(random.randint(0,100))
+
+  #задаем ключ партиционирования для Kafka
+  mes_key = str.encode(subject+name)
+  
+  #создаем полезную нагрузку в JSON 
+  data = {'id': id, 'name': name, 'subject': subject, 'content': content}
+
+  #публикуем данные в Kafka
+  future = producer.send('InputsTopic', value=data, key=mes_key)
+  record_metadata = future.get(timeout=60)
+  print(f' [x] Sent {record_metadata}')
+  
+  #повтор через 3 секунды
+  time.sleep(3)
+  
+  
+####################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#Закрываем соединения
+producer.close()
