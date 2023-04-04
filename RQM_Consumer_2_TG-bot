@@ -58,3 +58,8 @@ while True:
   channel.queue_bind(exchange='QuestionsHeadersExchange', queue=questions_queue.method.queue, routing_key='question', arguments={'subject': 'question', 'theme':'vip', 'theme':'vip', 'theme':'discount','theme':'staff','x-match':'all'})
   channel.basic_consume(queue=questions_queue.method.queue, on_message_callback=on_inputs_message, auto_ack=True)
   channel.start_consuming()
+
+####################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#Закрываем соединения
+channel.close()
+connection.close()
