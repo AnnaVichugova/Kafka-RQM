@@ -1,0 +1,27 @@
+####################################ячейка в Google Colab №1 (единственная)###########################################
+#импорт модулей 
+import requests
+from datetime import datetime
+
+#Получить свой TG-токен как описано тут https://medium.com/codex/using-python-to-send-telegram-messages-in-3-simple-steps-419a8b5e5e2
+# 1.Open your telegram app and search for BotFather. (A built-in Telegram bot that helps users create custom Telegram bots)
+# 2.Type /newbot to create a new bot
+# 3.Give your bot a name & a username
+# 4.Copy your new Telegram bot’s token
+
+#задаем свой TG-токен
+TOKEN = "....здесь ваш ТГ-тоген........."
+
+#надо, чтобы получить chat_id, потом можно закомментить эту строку 
+#url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
+
+#задаем chat_id своего TG-чата
+chat_id = "....здесь ID вашего ТГ-чата........."
+
+#генерация данных для ТГ
+now=datetime.now()
+message = ("мое сообщение " + now.strftime("%m/%d/%Y, %H:%M:%S"))
+url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
+
+# отправка данных в ТГ-чат
+print(requests.get(url).json())
