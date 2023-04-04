@@ -1,0 +1,51 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#установка библиотек 
+!pip install kafka-python 
+
+#импорт модулей 
+import json
+import random
+
+from kafka import KafkaConsumer
+from json import loads
+from kafka.structs import TopicPartition
+
+####################################ячейка в Google Colab №2 - потребление из Kafka###########################################
+#объявление потребителя Kafka
+consumer = KafkaConsumer(
+  bootstrap_servers=['........здесь взять название своего сервера.upstash.io:9092'],
+  sasl_mechanism='SCRAM-SHA-256',
+  security_protocol='SASL_SSL',
+  sasl_plain_username='.........здесь имя пользователя, взятое из upstash',
+  sasl_plain_password='..........здесь пароль для этого пользователя',
+  group_id='1',
+  auto_offset_reset='earliest',
+  enable_auto_commit=True
+)
+
+#consumer.unsubscribe()
+
+#подписка потребителя на топик Kafka
+consumer.subscribe(['CorpAppsTopic'])
+
+#считывание из топика Kafka
+for message in consumer:
+  payload=message.value.decode("utf-8")
+  data=json.loads(payload)
+  
+  #вывод исходных данных в консоль Goggle Colab
+  print(data)
+  
+  #парсинг JSON-сообщения полезной нагрузки
+  id=data['id']
+  name=data['name']
+  subject = data['subject']
+  content = data['content']
+  
+  #вывод распарсенных данных в консоль Goggle Colab
+  print('Заявка № ', id, ', клиент ', name, ', тема: ", subject, ', содержимое: ', content)
+
+###################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#отписываем потребителя и закрываем соединение 
+consumer.unsubscribe()
+consumer.close()
