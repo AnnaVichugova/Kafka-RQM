@@ -1,0 +1,72 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#установка библиотек
+!pip install kafka-python 
+
+#импорт модулей 
+import json
+import random
+import time
+
+import requests
+from datetime import datetime
+
+from kafka import KafkaConsumer
+from json import loads
+
+from kafka.structs import TopicPartition
+
+####################################ячейка в Google Colab №2 - потребление из Kafka###########################################
+#объявление потребителя Kafka
+consumer = KafkaConsumer(
+  bootstrap_servers=['........здесь взять название своего сервера.upstash.io:9092'],
+  sasl_mechanism='SCRAM-SHA-256',
+  security_protocol='SASL_SSL',
+  sasl_plain_username='.........здесь имя пользователя, взятое из upstash',
+  sasl_plain_password='..........здесь пароль для этого пользователя',
+  group_id='1',
+  auto_offset_reset='earliest',
+  enable_auto_commit=True
+)
+
+#consumer.unsubscribe()
+
+#подписка потребителя на топик Kafka
+consumer.subscribe(['CorpAppsTopic'])
+
+#Получить свой TG-токен как описано тут https://medium.com/codex/using-python-to-send-telegram-messages-in-3-simple-steps-419a8b5e5e2
+# 1.Open your telegram app and search for BotFather. (A built-in Telegram bot that helps users create custom Telegram bots)
+# 2.Type /newbot to create a new bot
+# 3.Give your bot a name & a username
+# 4.Copy your new Telegram bot’s token
+
+#задаем свой TG-токен
+TOKEN = "....здесь ваш ТГ-тоген........."
+
+#надо, чтобы получить chat_id, потом можно закомментить эту строку 
+#url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
+
+#задаем chat_id своего TG-чата
+chat_id = "....здесь ID вашего ТГ-чата........."
+
+for message in consumer:
+  txt=''
+  print (message)
+  payload=message.value.decode("utf-8")
+  data=json.loads(payload)
+
+  id=data['id']
+  name=data['name']
+  subject = data['subject']
+  content = data['content']
+  
+  #формируем сообщение для TG-чата
+  now=datetime.now()
+  txt = (now.strftime("%m/%d/%Y, %H:%M:%S"), "Входящее обращение от ", data['id'], "клиент ", data['name'], "тема ", data['subject'], "содержание ", data['content'])
+  url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={txt}"
+  #отправляем сообение в ТГ-чат
+  print(requests.get(url).json()) # this sends the message
+ 
+ ####################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#Закрываем соединения
+consumer.unsubscribe()
+consumer.close()
