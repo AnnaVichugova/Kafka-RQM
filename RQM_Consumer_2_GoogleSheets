@@ -1,0 +1,70 @@
+####################################ячейка в Google Colab №1 - установка и импорт библиотек###########################################
+#установка библиотек
+!pip install pika
+
+#импорт модулей 
+import pika
+import json
+import random
+
+from google.colab import auth
+auth.authenticate_user()
+
+import gspread
+from google.auth import default
+creds, _ = default()
+
+####################################ячейка в Google Colab №2 - потребление из RabbitMQ###########################################
+
+# Подключение к серверу RabbitMQ server в облачной платформе cloudamqp.com 
+connection = pika.BlockingConnection(pika.URLParameters('.........здесь взять адрес подключения к своему инстансу в https://customer.cloudamqp.com/instance'))
+channel = connection.channel()
+
+#объявление topic-обменника RQM, заранее созданного в cloudamqp.com
+channel.exchange_declare(exchange='AppsTopicExchange', exchange_type='topic')
+#объявление очереди RQM
+ind_apps_queue = channel.queue_declare(queue='IndAppsQueue')
+
+#Google Sheets Autentificate
+gc = gspread.authorize(creds)
+
+#Открытие заранее созданного файла Гугл-таблицы по идентификатору (взять из его URL, например, у меня это https://docs.google.com/spreadsheets/d/1BxVxI9kMHCgtRg1FLz7lsdazAjWCUbfTzSS4lApMiVY/edit)
+sh = gc.open_by_key('1BxVxI9kMHCgtRg1FLz7lsdazAjWCUbfTzSS4lApMiVY')
+wks = sh.sheet1
+
+#счетчик строк в Гугл-таблице
+x=1
+
+#определяем функцию обратного вызова для потребления сообщений из очереди RQM
+def on_inputs_message(ch, method, properties, body):
+ global x
+
+ #парсинг полезной нагрузки в JSON-формате
+ dictData = json.loads(body)
+ print("Входящее обращение от ", dictData['id'], "клиент ", dictData['name'], "тема ", dictData['subject'], "содержание ", dictData['content'])
+
+ id=dictData['id']
+ name=dictData['name']
+ content = dictData['content']
+
+ #переход на следующую строку в Гугл-таблице
+ x = x + 1
+
+ #обновление данных в в Гугл-таблице
+ wks.update_cell(x,1,id)
+ wks.update_cell(x,2,name)
+ wks.update_cell(x,3,content)
+
+#потребляем данные из RabbitMQ
+while True:
+  print('Waiting for messages. To exit press CTRL+C')
+  #привязка к очереди topic-обменника RQM
+  channel.queue_bind(exchange='AppsTopicExchange', queue=ind_apps_queue.method.queue)
+  channel.basic_consume(queue=ind_apps_queue.method.queue, on_message_callback=on_inputs_message, auto_ack=True)
+  channel.start_consuming()
+
+
+####################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#Закрываем соединения
+channel.close()
+connection.close()
