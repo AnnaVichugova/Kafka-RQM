@@ -5,6 +5,7 @@
 #импорт модулей 
 import json
 import random
+from datetime import datetime
 import time
 from time import sleep
 from kafka import KafkaProducer
@@ -41,7 +42,7 @@ while True:
 
   if corp==1 :
     routing_keys = ['app' + '.company.' + name, 'question']
-   else:
+  else:
     routing_keys = ['app', 'question']
 
   #случайный выбор одного из ключей маршрутизации (из routing keys)
@@ -68,7 +69,6 @@ while True:
   
   #повтор через 3 секунды
   time.sleep(3)
-  
   
 ####################################ячейка в Google Colab №3 - закрытие соединения###########################################
 #Закрываем соединения
