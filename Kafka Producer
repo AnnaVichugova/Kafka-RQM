@@ -62,7 +62,7 @@ while True:
   data = {'id': id, 'name': name, 'subject': subject, 'content': content}
 
   #публикуем данные в Kafka
-  future = producer.send('InputsTopic', value=data, key=mes_key)
+  future = producer.send('......здесь название вашего топика ........', value=data, key=mes_key)
   record_metadata = future.get(timeout=60)
   print(f' [x] Sent {record_metadata}')
   
