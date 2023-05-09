@@ -1,0 +1,31 @@
+Пример корпоративной заявки на покупку:
+{
+   "id":"03/30/2023 16:47:46",
+   "name":"Lisa",
+   "subject":"app.company.Lisa",
+   "content":"bred 6"
+}
+
+Пример заявки от физлица на покупку:
+{
+   "id":"05/09/2023 05:41:59",
+   "name":"Anna",
+   "subject":"app",
+   "content":"dress 63"
+}
+
+Пример заявки с вопросом по оплате:
+{
+   "id":"03/30/2023 16:47:52",
+   "name":"OOO Rim",
+   "subject":"question",
+   "content":"Hello, I have a question about payment"
+}
+
+Пример заявки с вопросом по доставке:
+{
+   "id":"03/30/2023 16:47:52",
+   "name":"OOO Rim",
+   "subject":"question",
+   "content":"Hello, I have a question about delivery"
+}
