@@ -36,11 +36,9 @@ while True:
  print('Waiting for messages. To exit press CTRL+C')
  
  #привязка к очереди fanout-обменника RQM
- channel.queue_bind(exchange='InputsFanoutExchange', queue=inputs_queue.method.queue)
  channel.basic_consume(queue=inputs_queue.method.queue, on_message_callback=on_inputs_message, auto_ack=True)
  #ИЛИ
  #привязка к очереди headers-обменника RQM
- channel.queue_bind(exchange='QuestionsHeadersExchange', queue=questions_queue.method.queue, routing_key='question', arguments={'subject': 'question', 'theme':'vip', 'theme':'vip', 'theme':'discount','theme':'staff','x-match':'all'})
  channel.basic_consume(queue=questions_queue.method.queue, on_message_callback=on_inputs_message, auto_ack=True)
 
  channel.start_consuming()
@@ -49,4 +47,3 @@ while True:
 #Закрываем соединения
 channel.close()
 connection.close()
-producer.close()
