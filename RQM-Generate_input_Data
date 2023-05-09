@@ -18,7 +18,8 @@ channel = connection.channel()
 channel.exchange_declare(exchange='InputsFanoutExchange', exchange_type='fanout')
 
 #списки полей в заявке
-names = ['Anna', 'Lisa', 'OOO Rim', 'ZAO Kisa', 'Ivan', 'Petr', 'Lisa', 'OOO Kira', 'Kira', 'OAO Tips']
+names_fiz = ['Anna', 'Lisa', 'Ivan', 'Petr', 'Kira', 'Dima', 'Oleg', 'Zina', 'Vlad', 'Nick']
+names_corp = ['ZAO SVAP', 'OOO Rim', 'ZAO Kisa', 'IP Lisana', 'OOO Zavod', 'OAO Tips', 'IP VAA']
 products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
 questions = ['payment', 'delivery', 'discount', 'vip', 'staff']
 
@@ -32,12 +33,13 @@ while True:
     corp = 0
 
     #подготовка списка возможных ключей маршрутизации (routing keys)
-    name = random.choice(names)
     corp = random.choice([1,0])
 
     if corp==1 :
+      name = random.choice(names_fiz)
       routing_keys = ['app' + '.company.' + name, 'question']
     else:
+      name = random.choice(names_corp)
       routing_keys = ['app', 'question']
 
     #случайный выбор одного из ключей маршрутизации (из routing keys)
