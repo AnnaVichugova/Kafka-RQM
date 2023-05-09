@@ -59,7 +59,6 @@ def on_inputs_message(ch, method, properties, body):
 while True:
   print('Waiting for messages. To exit press CTRL+C')
   #привязка к очереди topic-обменника RQM
-  channel.queue_bind(exchange='AppsTopicExchange', queue=ind_apps_queue.method.queue)
   channel.basic_consume(queue=ind_apps_queue.method.queue, on_message_callback=on_inputs_message, auto_ack=True)
   channel.start_consuming()
 
