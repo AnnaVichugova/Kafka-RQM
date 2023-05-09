@@ -3,6 +3,12 @@
 !pip install kafka-python 
 
 #импорт модулей 
+from google.colab import auth
+auth.authenticate_user()
+import gspread
+from google.auth import default
+creds, _ = default()
+
 import json
 import random
 
@@ -25,8 +31,21 @@ consumer = KafkaConsumer(
 
 #consumer.unsubscribe()
 
-#подписка потребителя на топик Kafka
-consumer.subscribe(['CorpAppsTopic'])
+#consumer.unsubscribe()
+
+#Google Sheets Autentificate
+gc = gspread.authorize(creds)
+
+# подписка потребителя на определенный раздел topic partition
+topic_partition = TopicPartition('InputsTopic', 2)   # указываем имя топика (здесь это InputsTopic) и номер раздела (здесь это 2)
+consumer.assign([topic_partition])
+
+#Открытие заранее созданного файла Гугл-таблицы по идентификатору (взять из его URL, например, у меня это https://docs.google.com/spreadsheets/d/1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM)
+sh = gc.open_by_key('1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM')
+wks = sh.worksheet("Partition_2") #в какой лист гугл-таблиц будем записывать данные
+
+#начальный номер строки для записи данных
+x=1
 
 #считывание из топика Kafka
 for message in consumer:
@@ -42,8 +61,18 @@ for message in consumer:
   subject = data['subject']
   content = data['content']
   
-  #вывод распарсенных данных в консоль Goggle Colab
-  print('Заявка № ', id, ', клиент ', name, ', тема: ", subject, ', содержимое: ', content)
+  #вывод распарсенных данных в консоль Google Colab
+  print('Заявка № ', id, ', клиент ', name, ', тема: ", subject, ', 'содержимое: ', content)
+
+  #обновление данных в в Гугл-таблице
+  global x
+  #переход на следующую строку в гугл-таблицах
+  x = x + 1
+
+  #запись данных в ячейки гугл-таблицы
+  wks.update_cell(x,1,id)
+  wks.update_cell(x,2,name)
+  wks.update_cell(x,3,content)
 
 ###################################ячейка в Google Colab №3 - закрытие соединения###########################################
 #отписываем потребителя и закрываем соединение 
