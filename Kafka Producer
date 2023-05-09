@@ -23,7 +23,8 @@ producer = KafkaProducer(
 
 #бесконечный цикл публикации данных
 #списки полей в заявке
-names = ['Anna', 'Lisa', 'OOO Rim', 'ZAO Kisa', 'Ivan', 'Petr', 'Lisa', 'OOO Kira', 'Kira', 'OAO Tips']
+names_fiz = ['Anna', 'Lisa', 'Ivan', 'Petr', 'Kira', 'Dima', 'Oleg', 'Zina', 'Vlad', 'Nick']
+names_corp = ['ZAO SVAP', 'OOO Rim', 'ZAO Kisa', 'IP Lisana', 'OOO Zavod', 'OAO Tips', 'IP VAA']
 products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
 questions = ['payment', 'delivery', 'discount', 'vip', 'staff']
 
@@ -35,14 +36,16 @@ while True:
   content = ''
   theme = ''
   corp = 0
+  part = 0
 
   #подготовка списка возможных ключей маршрутизации (routing keys)
-  name = random.choice(names)
   corp = random.choice([1,0])
 
   if corp==1 :
+    name = random.choice(names_fiz)
     routing_keys = ['app' + '.company.' + name, 'question']
   else:
+    name = random.choice(names_corp)
     routing_keys = ['app', 'question']
 
   #случайный выбор одного из ключей маршрутизации (из routing keys)
@@ -52,24 +55,32 @@ while True:
   if subject=='question':
     theme = random.choice(questions)
     content = 'Hello, I have a question about ' + theme
+    part=0 #все вопросы записывать в раздел 0
   else :
     theme ='app'
+    if corp==1 :
+      part=1 #все корпоративные заявки записывать в раздел 1
+    else:
+      part=2 #заявки от частных лиц записывать в раздел 2 
     content = random.choice(products) + ' ' + str(random.randint(0,100))
 
-  #задаем ключ партиционирования для Kafka
+  #задаем ключ сообщения для Kafka
   mes_key = str.encode(subject+name)
   
   #создаем полезную нагрузку в JSON 
   data = {'id': id, 'name': name, 'subject': subject, 'content': content}
 
   #публикуем данные в Kafka
-  future = producer.send('......здесь название вашего топика ........', value=data, key=mes_key)
+  future = producer.send('InputsTopic', value=data, partition=part, key=mes_key) #здесь вместо InputsTopic должно быть название вашего топика
   record_metadata = future.get(timeout=60)
-  print(f' [x] Sent {record_metadata}')
+  
+  #вывод отладочной информации
+  print(f' [x] Sent {record_metadata}') 
+  print(f' [x] Corp =  {corp}')
+  print(f' [x] Payload {data}')
   
   #повтор через 3 секунды
-  time.sleep(3)
-  
+  time.sleep(3)  
 ####################################ячейка в Google Colab №3 - закрытие соединения###########################################
 #Закрываем соединения
 producer.close()
