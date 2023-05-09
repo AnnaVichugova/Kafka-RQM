@@ -58,7 +58,6 @@ while True:
   
   #потребляем данные из RabbitMQ
   print('Waiting for messages. To exit press CTRL+C')
-  channel.queue_bind(exchange='InputsFanoutExchange', queue=inputs_queue.method.queue)
   channel.basic_consume(queue=inputs_queue.method.queue, on_message_callback=on_inputs_message, auto_ack=True)
   channel.start_consuming()
   
