@@ -20,8 +20,6 @@ creds, _ = default()
 connection = pika.BlockingConnection(pika.URLParameters('.........здесь взять адрес подключения к своему инстансу в https://customer.cloudamqp.com/instance'))
 channel = connection.channel()
 
-#объявление topic-обменника RQM, заранее созданного в cloudamqp.com
-channel.exchange_declare(exchange='AppsTopicExchange', exchange_type='topic')
 #объявление очереди RQM
 ind_apps_queue = channel.queue_declare(queue='IndAppsQueue')
 
