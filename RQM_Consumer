@@ -15,8 +15,6 @@ import time
 connection = pika.BlockingConnection(pika.URLParameters('.........здесь взять адрес подключения к своему инстансу в https://customer.cloudamqp.com/instance'))
 channel = connection.channel()
 
-#объявление fanout-обменника RQM, заранее созданного в cloudamqp.com
-channel.exchange_declare(exchange='InputsFanoutExchange', exchange_type='fanout')
 #объявление очереди RQM
 inputs_queue = channel.queue_declare(queue='InputsQueue')
 #ИЛИ
