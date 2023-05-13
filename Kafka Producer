@@ -42,10 +42,10 @@ while True:
   corp = random.choice([1,0])
 
   if corp==1 :
-    name = random.choice(names_fiz)
+    name = random.choice(names_corp)
     routing_keys = ['app' + '.company.' + name, 'question']
   else:
-    name = random.choice(names_corp)
+    name = random.choice(names_fiz)
     routing_keys = ['app', 'question']
 
   #случайный выбор одного из ключей маршрутизации (из routing keys)
