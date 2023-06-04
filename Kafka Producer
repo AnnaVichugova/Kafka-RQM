@@ -10,6 +10,10 @@ import time
 from time import sleep
 from kafka import KafkaProducer
 
+# Импорт модуля faker
+from faker import Faker
+from faker.providers.address.ru_RU import Provider
+
 ####################################ячейка в Google Colab №2 - публикация сообщений в Kafka###########################################
 # объявление продюсера Kafka
 producer = KafkaProducer(
@@ -21,13 +25,16 @@ producer = KafkaProducer(
   value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
-#бесконечный цикл публикации данных
+# Создание объекта Faker с использованием провайдера адресов для России
+fake = Faker('ru_RU')
+fake.add_provider(Provider)
+
+
 #списки полей в заявке
-names_fiz = ['Anna', 'Lisa', 'Ivan', 'Petr', 'Kira', 'Dima', 'Oleg', 'Zina', 'Vlad', 'Nick']
-names_corp = ['ZAO SVAP', 'OOO Rim', 'ZAO Kisa', 'IP Lisana', 'OOO Zavod', 'OAO Tips', 'IP VAA']
 products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
 questions = ['payment', 'delivery', 'discount', 'vip', 'staff']
 
+#бесконечный цикл публикации данных
 while True:
   #подготовка данных для публикации в JSON-формате
   now=datetime.now()
@@ -42,10 +49,12 @@ while True:
   corp = random.choice([1,0])
 
   if corp==1 :
-    name = random.choice(names_corp)
+    #name = random.choice(names_corp)
+    name=fake.company()
     routing_keys = ['app' + '.company.' + name, 'question']
   else:
-    name = random.choice(names_fiz)
+    #name = random.choice(names_fiz)
+    name=fake.name()
     routing_keys = ['app', 'question']
 
   #случайный выбор одного из ключей маршрутизации (из routing keys)
@@ -58,12 +67,12 @@ while True:
     part=0 #все вопросы записывать в раздел 0
   else :
     theme ='app'
+    content = random.choice(products) + ' ' + str(random.randint(0,100))
     if corp==1 :
       part=1 #все корпоративные заявки записывать в раздел 1
     else:
-      part=2 #заявки от частных лиц записывать в раздел 2 
-    content = random.choice(products) + ' ' + str(random.randint(0,100))
-
+      part=2 #заявки от частных лиц записывать в раздел 2  
+    
   #задаем ключ сообщения для Kafka
   mes_key = str.encode(subject+name)
   
@@ -71,16 +80,15 @@ while True:
   data = {'id': id, 'name': name, 'subject': subject, 'content': content}
 
   #публикуем данные в Kafka
-  future = producer.send('InputsTopic', value=data, partition=part, key=mes_key) #здесь вместо InputsTopic должно быть название вашего топика
+  future = producer.send('InputsTopic', value=data, partition=part, key=mes_key)
   record_metadata = future.get(timeout=60)
-  
-  #вывод отладочной информации
-  print(f' [x] Sent {record_metadata}') 
+  print(f' [x] Sent {record_metadata}')
   print(f' [x] Corp =  {corp}')
   print(f' [x] Payload {data}')
   
   #повтор через 3 секунды
-  time.sleep(3)  
+  time.sleep(3)
+ 
 ####################################ячейка в Google Colab №3 - закрытие соединения###########################################
 #Закрываем соединения
 producer.close()
