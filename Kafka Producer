@@ -12,7 +12,6 @@ from kafka import KafkaProducer
 
 # Импорт модуля faker
 from faker import Faker
-from faker.providers.address.ru_RU import Provider
 
 ####################################ячейка в Google Colab №2 - публикация сообщений в Kafka###########################################
 # объявление продюсера Kafka
@@ -26,9 +25,7 @@ producer = KafkaProducer(
 )
 
 # Создание объекта Faker с использованием провайдера адресов для России
-fake = Faker('ru_RU')
-fake.add_provider(Provider)
-
+fake = Faker()
 
 #списки полей в заявке
 products = ['bred', 'garlic', 'oil', 'apples', 'water', 'soup', 'dress', 'tea', 'cacao', 'coffee', 'bananas', 'butter', 'eggs', 'oatmeal']
