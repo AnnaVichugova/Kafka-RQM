@@ -29,15 +29,15 @@ consumer = KafkaConsumer(
   enable_auto_commit=True
 )
 
-#consumer.unsubscribe()
-
-#consumer.unsubscribe()
-
 #Google Sheets Autentificate
 gc = gspread.authorize(creds)
 
 # подписка потребителя на определенный раздел topic partition
-topic_partition = TopicPartition('InputsTopic', 2)   # указываем имя топика (здесь это InputsTopic) и номер раздела (здесь это 2)
+#все вопросы лежат в разделе 0
+#все корпоративные заявки лежат в разделе 1
+#заявки от частных лиц лежат в разделе 2
+part=0 #задание раздела
+topic_partition = TopicPartition('InputsTopic', part)   # указываем имя топика и номер раздела
 consumer.assign([topic_partition])
 
 #Открытие заранее созданного файла Гугл-таблицы по идентификатору (взять из его URL, например, у меня это https://docs.google.com/spreadsheets/d/1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM)
