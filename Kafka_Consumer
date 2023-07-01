@@ -36,43 +36,69 @@ gc = gspread.authorize(creds)
 #все вопросы лежат в разделе 0
 #все корпоративные заявки лежат в разделе 1
 #заявки от частных лиц лежат в разделе 2
-part=0 #задание раздела
-topic_partition = TopicPartition('InputsTopic', part)   # указываем имя топика и номер раздела
-consumer.assign([topic_partition])
+part=1 #задание раздела
+topic_partition = TopicPartition(topic, part)   # указываем имя топика и номер раздела
+consumer.assign([topic_partition]) #назначаем потребителя на этот топик и раздел
+
+# Если хотим считать с определенной позиции
+#offset=290 # устанавливаем позицию
+#consumer.seek(topic_partition, offset) # устанавливаем позицию
+
+# Если хотим считать с определенного момента времени
+# определяем момент времени, с которого начнется чтение
+#timestamp = datetime(2023, 7, 1, 0, 50, 0).timestamp() * 1000 # переводим в миллисекунды
+#offsets = consumer.offsets_for_times({topic_partition: timestamp}) # определяем смещение для каждой партиции в топике
+
+# Если хотим считать с определенного момента времени или с определенной позиции, устанавливаем позицию для каждой партиции в топике
+#if offsets[topic_partition] is not None:
+#   consumer.seek(topic_partition, offsets[topic_partition].offset)
 
 #Открытие заранее созданного файла Гугл-таблицы по идентификатору (взять из его URL, например, у меня это https://docs.google.com/spreadsheets/d/1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM)
 sh = gc.open_by_key('1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM')
-wks = sh.worksheet("Partition_2") #в какой лист гугл-таблиц будем записывать данные
+wks = sh.worksheet("Partition_"+ str(part)) #в какой лист гугл-таблиц будем записывать
 
 #начальный номер строки для записи данных
 x=1
 
-#считывание из топика Kafka
+# обработка сообщений из Kafka
 for message in consumer:
-  payload=message.value.decode("utf-8")
-  data=json.loads(payload)
-  
-  #вывод исходных данных в консоль Goggle Colab
-  print(data)
-  
-  #парсинг JSON-сообщения полезной нагрузки
-  id=data['id']
-  name=data['name']
-  subject = data['subject']
-  content = data['content']
-  
-  #вывод распарсенных данных в консоль Google Colab
-  print('Заявка № ', id, ', клиент ', name, ', тема: ", subject, ', 'содержимое: ', content)
+    try: #пробуем обработать структуру данных полезной нагрузки
+        # распаковка сообщения
+        payload = message.value.decode("utf-8")
+        data = json.loads(payload)
 
-  #обновление данных в в Гугл-таблице
-  global x
-  #переход на следующую строку в гугл-таблицах
-  x = x + 1
+        # вывод сообщения в консоль
+        print(f"Offset: {message.offset}, Value: {message.value}")
+        print(consumer.position(topic_partition))
+        print(f"Timestamp: {message.timestamp}, Value: {message.value}")
+        timestamp = message.timestamp / 1000.0
+        datetime_object = datetime.fromtimestamp(timestamp)
+        formatted_timestamp = datetime_object.strftime('%Y-%m-%d %H:%M:%S.%f')
+        print(f"Timestamp: {formatted_timestamp}, Value: {message.value}")
+        print(data)
 
-  #запись данных в ячейки гугл-таблицы
-  wks.update_cell(x,1,id)
-  wks.update_cell(x,2,name)
-  wks.update_cell(x,3,content)
+        # парсинг сообщения
+        id = data['id']
+        name = data['name']
+        subject = data['subject']
+        content = data['content']
+
+        # вывод распарсенных данных в консоль
+        print(f'Заявка № {id}, клиент {name}, тема: {subject}, содержимое: {content}')
+
+        # обновление данных в Google Sheets
+        x += 1
+        wks.update_cell(x, 1, id)
+        wks.update_cell(x, 2, name)
+        wks.update_cell(x, 3, content)
+
+# обработка исключений
+    except Exception as e:
+        # запись ошибок в лог-файл на Google Диске
+        error_str = f"Error: {str(e)}, Offset: {message.offset}, Value: {message.value}\n"
+        with open("dlq.txt", "a") as f:
+            f.write(error_str)
+        print(f"Error: {str(e)}")
 
 ###################################ячейка в Google Colab №3 - закрытие соединения###########################################
 #отписываем потребителя и закрываем соединение 
