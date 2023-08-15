@@ -11,6 +11,7 @@ creds, _ = default()
 
 import json
 import random
+from datetime import datetime
 
 from kafka import KafkaConsumer
 from json import loads
