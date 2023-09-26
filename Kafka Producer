@@ -24,7 +24,7 @@ producer = KafkaProducer(
   sasl_plain_password='..........здесь пароль для этого пользователя',
   value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
-
+topic='InputsTopic' # название вашего топика
 # Создание объекта Faker с использованием провайдера адресов для России
 fake = Faker()
 
@@ -78,7 +78,7 @@ while True:
   data = {'id': id, 'name': name, 'subject': subject, 'content': content}
 
   #публикуем данные в Kafka
-  future = producer.send('InputsTopic', value=data, partition=part, key=mes_key)
+  future = producer.send(topic, value=data, partition=part, key=mes_key)
   record_metadata = future.get(timeout=60)
   print(f' [x] Sent {record_metadata}')
   print(f' [x] Corp =  {corp}')
