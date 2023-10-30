@@ -47,16 +47,12 @@ while True:
   corp = random.choice([1,0])
 
   if corp==1 :
-    #name = random.choice(names_corp)
     name=fake.company()
-    routing_keys = ['app' + '.company.' + name, 'question']
   else:
-    #name = random.choice(names_fiz)
     name=fake.name()
-    routing_keys = ['app', 'question']
 
-  #случайный выбор одного из ключей маршрутизации (из routing keys)
-  subject=random.choice(routing_keys)
+  #случайный выбор предмета обращения
+  subject=random.choice( ['app', 'question'])
 
   #добавление дополнительных данных для заголовка и тела сообщения в зависимости от темы заявки
   if subject=='question':
@@ -69,19 +65,15 @@ while True:
     if corp==1 :
       part=1 #все корпоративные заявки записывать в раздел 1
     else:
-      part=2 #заявки от частных лиц записывать в раздел 2  
-    
-  #задаем ключ сообщения для Kafka
-  mes_key = str.encode(subject+name)
-  
+      part=2 #заявки от частных лиц записывать в раздел 2
+     
   #создаем полезную нагрузку в JSON 
   data = {'id': id, 'name': name, 'subject': subject, 'content': content}
 
   #публикуем данные в Kafka
-  future = producer.send(topic, value=data, partition=part, key=mes_key)
+  future = producer.send(topic, value=data, partition=part)
   record_metadata = future.get(timeout=60)
   print(f' [x] Sent {record_metadata}')
-  print(f' [x] Corp =  {corp}')
   print(f' [x] Payload {data}')
   
   #повтор через 3 секунды
