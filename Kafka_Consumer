@@ -26,7 +26,7 @@ consumer = KafkaConsumer(
   sasl_plain_username='.........здесь имя пользователя, взятое из upstash',
   sasl_plain_password='..........здесь пароль для этого пользователя',
   group_id='1',
-  auto_offset_reset='earliest',
+  auto_offset_reset='latest',
   enable_auto_commit=True
 )
 topic='InputsTopic' #название вашего топика
