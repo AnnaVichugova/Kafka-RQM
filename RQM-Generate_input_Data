@@ -61,10 +61,7 @@ while True:
   else :
     theme ='app'
     content = random.choice(products) + ' ' + str(random.randint(0,100))
-    
-  #задаем ключ сообщения для Kafka
-  mes_key = str.encode(subject+name)
-  
+     
   #создаем полезную нагрузку в JSON 
   data = {'id': id, 'name': name, 'subject': subject, 'content': content}
   message = json.dumps(data)
