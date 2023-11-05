@@ -45,8 +45,8 @@ TOKEN = "....здесь ваш ТГ-тоген........."
 #надо, чтобы получить chat_id, потом можно закомментить эту строку 
 #url = f"https://api.telegram.org/bot{TOKEN}/getUpdates"
 
-#задаем chat_id своего TG-чата
-chat_id = "....здесь ID вашего ТГ-чата........."
+#задаем chat_id своего пользователя TG
+chat_id = "....здесь ID вашего пользователя ТГ........"
 
 for message in consumer:
   txt=''
