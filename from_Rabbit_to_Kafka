@@ -27,7 +27,8 @@ connection = pika.BlockingConnection(pika.URLParameters('.........здесь в�
 channel = connection.channel()
 
 #объявление очереди RQM
-inputs_queue = channel.queue_declare(queue='InputsQueue')
+my_queue='InputsQueue' #ваше название очереди
+inputs_queue = channel.queue_declare(queue=my_queue)
 
 #бесконечный цикл потребления и публикации
 while True: 
