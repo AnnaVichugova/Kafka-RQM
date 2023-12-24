@@ -67,7 +67,8 @@ while True:
   message = json.dumps(data)
 
   #отправка сообщения в обменник RabbitMQ с ключом маршрутизации и свойствами (заголовок)
-  channel.basic_publish(exchange='InputsFanoutExchange', routing_key=subject, body=message, properties=pika.BasicProperties(headers = {'subject': subject, 'theme':theme}))
+  my_exch='InputsFanoutExchange' #название  вашего обменника
+  channel.basic_publish(exchange=my_exch, routing_key=subject, body=message, properties=pika.BasicProperties(headers = {'subject': subject, 'theme':theme}))
 
   #вывод отладочной информации     
   print(f' [x] routing_key {subject}')
