@@ -15,7 +15,8 @@ connection = pika.BlockingConnection(pika.URLParameters('.........здесь в�
 channel = connection.channel()
 
 #объявление очереди RQM
-questions_queue = channel.queue_declare(queue='OtherQuestionsQueue')
+my_queue='OtherQuestionsQueue' #ваше название очереди
+questions_queue = channel.queue_declare(queue=my_queue)
 
 #Получить свой TG-токен как описано тут https://medium.com/codex/using-python-to-send-telegram-messages-in-3-simple-steps-419a8b5e5e2
 # 1.Open your telegram app and search for BotFather. (A built-in Telegram bot that helps users create custom Telegram bots)
