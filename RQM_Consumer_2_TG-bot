@@ -35,21 +35,29 @@ chat_id = "....здесь ID вашего пользователя ТГ........"
 
 #определяем функцию обратного вызова для потребления сообщений из очереди RQM
 def on_inputs_message(ch, method, properties, body):
- data = json.loads(body)
- print("Входящее обращение от ", data['id'], "клиент ", data['name'], "тема ", data['subject'], "содержание ", data['content'])
+ try:
+  data = json.loads(body)
+  print("Входящее обращение от ", data['id'], "клиент ", data['name'], "тема ", data['subject'], "содержание ", data['content'])
 
- id=data['id']
- name=data['name']
- subject = data['subject']
- content = data['content']
- now=datetime.now()
+  id=data['id']
+  name=data['name']
+  subject = data['subject']
+  content = data['content']
+  now=datetime.now()
 
- #формируем сообщение для TG-чата
- txt = (now.strftime("%m/%d/%Y, %H:%M:%S"), "Входящее обращение от ", data['id'], "клиент ", data['name'], "тема ", data['subject'], "содержание ", data['content'])
- url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={txt}"
- #отправляем сообение в ТГ-чат
- print(requests.get(url).json()) # this sends the message
- 
+  #формируем сообщение для TG-чата
+  txt = (now.strftime("%m/%d/%Y, %H:%M:%S"), "Входящее обращение от ", data['id'], "клиент ", data['name'], "тема ", data['subject'], "содержание ", data['content'])
+  url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={txt}"
+  #отправляем сообение в ТГ-чат
+  print(requests.get(url).json()) # this sends the message
+
+ except Exception as e:
+  #запись ошибок в лог-файл на Google Диске
+  error_str = f"Error: {str(e)}, Value: {data}\n"
+  with open("dlq.txt", "a") as f:
+      f.write(error_str)
+  print(f"Error: {str(e)}")
+
 #потребляем данные из RabbitMQ
 while True:
   print('Waiting for messages. To exit press CTRL+C')
