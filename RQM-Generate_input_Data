@@ -19,7 +19,9 @@ connection = pika.BlockingConnection(pika.URLParameters('.........здесь в�
 channel = connection.channel()
 
 # объявление обменника, заранее созданного в cloudamqp.com
-channel.exchange_declare(exchange='InputsFanoutExchange', exchange_type='fanout')
+exch='InputsFanoutExchange'
+exch_type='fanout'
+channel.exchange_declare(exchange=exch, exchange_type=exch_type, durable = True)
 
 # Создание объекта Faker с использованием провайдера адресов для России
 fake = Faker()
