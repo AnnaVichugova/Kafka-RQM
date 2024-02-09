@@ -18,16 +18,23 @@ channel = connection.channel()
 #объявление очереди RQM
 inputs_queue = channel.queue_declare(queue='InputsQueue')
 #ИЛИ
-#объявление headers-обменника RQM, заранее созданного в cloudamqp.com
-channel.exchange_declare(exchange='QuestionsHeadersExchange', exchange_type='headers')
 #объявление очереди RQM
 questions_queue = channel.queue_declare(queue='OtherQuestionsQueue')
 
 #определяем функцию обратного вызова для потребления сообщений из очереди RQM
 def on_inputs_message(ch, method, properties, body):
- #обработка полезной нагрузки в JSON 
- dictData = json.loads(body)
- print("Входящее обращение от ", dictData['id'], "клиент ", dictData['name'], "тема ", dictData['subject'], "содержание ", dictData['content'])
+
+ try:
+  #обработка полезной нагрузки в JSON 
+  dictData = json.loads(body)
+  print("Входящее обращение от ", dictData['id'], "клиент ", dictData['name'], "тема ", dictData['subject'], "содержание ", dictData['content'])
+
+ except Exception as e:
+  #запись ошибок в лог-файл на Google Диске
+  error_str = f"Error: {str(e)}, Value: {data}\n"
+  with open("dlq.txt", "a") as f:
+      f.write(error_str)
+  print(f"Error: {str(e)}")
 
 #потребляем данные из RabbitMQ
 while True:
