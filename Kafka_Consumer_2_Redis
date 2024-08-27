@@ -1,0 +1,60 @@
+############################ячейка №1 в Google Colab#####################################
+#установка библиотек 
+!pip install kafka-python 
+!pip install redis
+
+#импорт модулей 
+import json
+import random
+import time
+import redis
+
+from datetime import datetime
+from kafka import KafkaConsumer
+from json import loads
+from kafka.structs import TopicPartition
+
+############################ячейка №2 в Google Colab#####################################
+#подключение к redis
+r = redis.Redis(
+  host= '.........здесь название инстанса.upstash.io',
+  port= '34670',
+  password= 'здесь пароль пользователя Redis в upstash',
+  ssl=True #если SSL на Redis включен, сейчас он включен в Upsatsh по умолчанию всегда
+)
+
+#объявление потребителя Kafka
+consumer = KafkaConsumer(
+  bootstrap_servers=['........здесь взять название своего сервера.upstash.io:9092'],
+  sasl_mechanism='SCRAM-SHA-256',
+  security_protocol='SASL_SSL',
+  sasl_plain_username='.........здесь имя пользователя, взятое из upstash',
+  sasl_plain_password='..........здесь пароль для этого пользователя',
+  group_id='1',
+  auto_offset_reset='latest',
+  enable_auto_commit=True
+)
+topic='InputsTopic' #название вашего топика
+
+#подписка потребителя на топик Kafka
+consumer.subscribe([topic])
+
+#считывание из топика Kafka
+for message in consumer:
+  payload=message.value.decode("utf-8")
+  data=json.loads(payload)
+  print(data)
+  
+  #парсинг JSON-сообщения полезной нагрузки
+  id=data['id']
+  name=data['name']
+  subject = data['subject']
+  content = data['content']
+  
+  #запись в Redis
+  r.rpush(id, name)
+
+###################################ячейка в Google Colab №3 - закрытие соединения###########################################
+#отписываем потребителя и закрываем соединение 
+consumer.unsubscribe()
+consumer.close()
