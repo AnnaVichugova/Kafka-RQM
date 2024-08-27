@@ -53,7 +53,7 @@ consumer.assign([topic_partition]) #назначаем потребителя н
 
 # Если хотим считать с определенного момента времени или с определенной позиции, устанавливаем позицию для каждой партиции в топике
 #if offsets[topic_partition] is not None:
-#   consumer.seek(topic_partition, offsets[topic_partition].offset)
+  #consumer.seek(topic_partition, offsets[topic_partition].offset)
 
 #Открытие заранее созданного файла Гугл-таблицы по идентификатору (взять из его URL, например, у меня это https://docs.google.com/spreadsheets/d/1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM)
 sh = gc.open_by_key('1ZQuotMVhaOuOtnZ56mvd1zX-5JOhsXc1WTG6GTBjzzM')
