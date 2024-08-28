@@ -57,7 +57,7 @@ def on_inputs_message(ch, method, properties, body):
  
  except Exception as e:
   #запись ошибок в лог-файл на Google Диске
-  error_str = f"Error: {str(e)}, Value: {data}\n"
+  error_str = f"Error: {str(e)}, Value: {dictData}\n"
   with open("dlq.txt", "a") as f:
     f.write(error_str)
   print(f"Error: {str(e)}")
